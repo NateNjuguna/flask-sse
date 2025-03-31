@@ -158,12 +158,18 @@ class ServerSentEventsBlueprint(Blueprint):
 
         @stream_with_context
         def generator():
+            yield "retry:5000\n\n"
             for message in self.messages(channel=channel):
                 yield str(message)
 
         return current_app.response_class(
             generator(),
             mimetype='text/event-stream',
+            headers={
+                'Transfer-Encoding': 'identity',
+                'Cache-Control': 'no-cache',
+                'X-Accel-Buffering': 'no',
+            }),
         )
 
 
